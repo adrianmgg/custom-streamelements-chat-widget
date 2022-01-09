@@ -1,0 +1,17 @@
+{
+  "use_pronouns_extension": {
+    "type": "checkbox",
+    "label": "Chat Pronouns Integration",
+    "value": false
+  },
+  "localized_name_mode": {
+    "type": "dropdown",
+    "label": "Localized Display Name Handling",
+    "options": {
+      "localized_only": "just localized name",
+      "unlocalized_only": "just username",
+      "both": "both"
+    },
+    "value": "both"
+  }
+}

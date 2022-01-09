@@ -1,0 +1,8 @@
+.username {
+  color: var(--user-color);
+  text-shadow: -1px -1px 0 var(--user-color-outline), 1px -1px 0 var(--user-color-outline), -1px 1px 0 var(--user-color-outline), 1px 1px 0 var(--user-color-outline);
+}
+
+.badges_container .badge {
+  height: 1em;
+}
