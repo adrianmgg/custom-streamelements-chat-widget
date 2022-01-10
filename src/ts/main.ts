@@ -6,6 +6,7 @@
 import { contrastRatio, parseHexColor } from './color';
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
+import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap } from './streamelements';
 
 
 // let userCurrency; 
@@ -20,7 +21,7 @@ function init() {
     chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXE actually check instead of just casting
 }
 
-function handle_chat_message(detail) {
+function handle_chat_message(detail: SEChatMessageEventDetail) {
     const template_instance = chat_template.content.firstElementChild.cloneNode(true) as HTMLElement | SVGElement;
     // color
     {
@@ -91,17 +92,15 @@ function handle_chat_message(detail) {
     chat_root.appendChild(template_instance);
 }
 
-const se_event_handlers: Record<string, (x: unknown) => void> = {
+const se_event_handlers: { [K in keyof SEEventListenerDetailTypeMap]?: (x: SEEventListenerDetailTypeMap[K]) => void } = {
     message: handle_chat_message,
 };
 
 // SE event stuff
 
-window.addEventListener('onEventReceived', function (e: CustomEvent) {
+window.addEventListener('onEventReceived', function (e: SEEvent) {
     console.log(e);
-    const handler = se_event_handlers[e.detail.listener];
-    if(handler !== undefined) handler(e.detail);
-    // else console.log(e);
+    se_event_handlers[e.detail.listener]?.(e.detail as any);
 });
 
 window.addEventListener('onWidgetLoad', (e: CustomEvent) => {
