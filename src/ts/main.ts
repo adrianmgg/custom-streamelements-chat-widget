@@ -8,16 +8,17 @@
 let fieldData;
 
 let chat_root;
-let chat_template;
+let chat_template: HTMLTemplateElement;
 
 let getUserPronouns;
 
 function init() {
-  ({chat_root, chat_template} = getFirstWithClassAll(document, 'chat_root', 'chat_template'));
+  chat_root = document.getElementsByClassName('chat_root')?.[0];
+  chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXE actually check instead of just casting
 }
 
 function handle_chat_message(detail) {
-  const template_instance = chat_template.content.firstElementChild.cloneNode(true);
+  const template_instance = chat_template.content.firstElementChild.cloneNode(true) as HTMLElement | SVGElement;
   // color
   {
     // temp - randomize color
@@ -38,9 +39,15 @@ function handle_chat_message(detail) {
     });
   }
   // fill in text
-  let template_elems = getFirstWithClassAll(template_instance, 'username', 'message', 'pronoun_container', 'pronoun_text', 'badges_container', 'username_secondary_container', 'username_secondary');
+  const username_elems = template_instance.getElementsByClassName('username') as HTMLCollectionOf<HTMLElement>;
+  const message_elems = template_instance.getElementsByClassName('message') as HTMLCollectionOf<HTMLElement>;
+  const pronoun_container_elems = template_instance.getElementsByClassName('pronoun_container') as HTMLCollectionOf<HTMLElement>;
+  const pronoun_text_elems = template_instance.getElementsByClassName('pronoun_text') as HTMLCollectionOf<HTMLElement>;
+  const badges_container_elems = template_instance.getElementsByClassName('badges_container') as HTMLCollectionOf<HTMLElement>;
+  const username_secondary_container_elems = template_instance.getElementsByClassName('username_secondary_container') as HTMLCollectionOf<HTMLElement>;
+  const username_secondary_elems = template_instance.getElementsByClassName('username_secondary') as HTMLCollectionOf<HTMLElement>;
   // message
-  template_elems.message.textContent = detail.event.data.text;
+  for(const el of message_elems) el.textContent = detail.event.data.text;
   // username
   {
     let username_primary = null, username_secondary = null;
@@ -54,9 +61,9 @@ function handle_chat_message(detail) {
         break;
       default: throw 'TODO';
     }
-    template_elems.username.textContent = username_primary;
-    if(username_secondary === null) template_elems.username_secondary_container.style.display = 'none';
-    else template_elems.username_secondary.textContent = username_secondary;
+    for(const el of username_elems) el.textContent = username_primary;
+    if(username_secondary === null) for(const el of username_secondary_container_elems) el.style.display = 'none';
+    else for(const el of username_secondary_elems) el.textContent = username_secondary;
   }
   // badges
   for(const badge of detail.event.data.badges) {
@@ -66,40 +73,32 @@ function handle_chat_message(detail) {
     img.classList.add('badge');
     // badge.description
     // badge.version
-    template_elems.badges_container.appendChild(img);
+    for(const el of badges_container_elems) el.appendChild(img);
   }
   // pronouns
   if(!fieldData.use_pronouns_extension) {
-    template_elems.pronoun_container.style.display = 'none';
+    for(const el of pronoun_container_elems) el.style.display = 'none';
   } else {
-    getUserPronouns(detail.event.data.nick).then(function(pronouns){
-      if(pronouns === null) template_elems.pronoun_container.style.display = 'none';
-      else template_elems.pronoun_text.textContent = pronouns;
+    getUserPronouns(detail.event.data.nick).then(pronouns=>{
+      if(pronouns === null) for(const el of pronoun_container_elems) el.style.display = 'none';
+      else for(const el of pronoun_text_elems) el.textContent = pronouns;
     });
   }
   //
   chat_root.appendChild(template_instance);
 }
 
-const se_event_handlers = {
+const se_event_handlers: Record<string, (x: unknown) => void> = {
   message: handle_chat_message,
 };
 
 // misc. utility functions
 
-function getFirstWithClassAll(target, ...classes) {
-  let ret = {};
-  for(const cls of classes) {
-    ret[cls] = target.getElementsByClassName(cls)[0];
-  }
-  return ret;
-}
-
-function setAllCSSVars(target, vars) {
+function setAllCSSVars(target: HTMLElement | SVGElement, vars: Record<string, string>) {
   for(const k in vars) target.style.setProperty(k, vars[k]);
 }
 
-function minmax(a, b) {
+function minmax(a: number, b: number): [number, number] {
   if(a < b) return [a, b];
   else return [b, a];
 }
@@ -110,21 +109,21 @@ function minmax(a, b) {
 const color_util = {
   // TODO only does '#RRGGBB' ones for now, do we ever need to handle anything else?
   // TODO needs some error checking
-  parseHexColor(c) {
+  parseHexColor(c: string): [number, number, number] {
     return [parseInt(c.slice(1,3), 16)/255, parseInt(c.slice(3,5), 16)/255, parseInt(c.slice(5,7), 16)/255];
   },
-  rgbToLinear(rgb){
+  rgbToLinear(rgb: [number, number, number]){
     // TODO " Draft publications by sRGB's creators further rounded to 12.92, resulting in
     //        a small discontinuity in the curve "
     //      - https://en.wikipedia.org/wiki/SRGB
     //      should i use the more accurate value? probably doesnt matter for 8bpp color lol
     return rgb.map(n=>(n<=0.03928)?(n/12.92): Math.pow((n+0.055)/1.055, 2.4) );
   },
-  relativeLuminance(rgb) {
+  relativeLuminance(rgb: [number, number, number]) {
     const [r, g, b] = color_util.rgbToLinear(rgb);
     return 0.2126*r + 0.7152*g + 0.0722*b;
   },
-  contrastRatio(c1, c2){
+  contrastRatio(c1: [number, number, number], c2: [number, number, number]){
     const [l2, l1] = minmax(color_util.relativeLuminance(c1), color_util.relativeLuminance(c2));
     return (l1 + 0.05) / (l2 + 0.05);
   }
@@ -132,8 +131,9 @@ const color_util = {
 
 // pronouns
 
-function pronounAPI(endpoint) {
-  return fetch(`https://pronouns.alejo.io/api/${endpoint}`).then(response=>response.json());
+async function pronounAPI(endpoint: string) {
+  const response = await fetch(`https://pronouns.alejo.io/api/${endpoint}`);
+  return await response.json();
 }
 
 function setupPronounsStuff(){
@@ -148,22 +148,20 @@ function setupPronounsStuff(){
     };
     return pronounNameDisplayMap;
   });
-  async function getPronounIdUncached(user) {
+  async function getPronounIdUncached(user: string) {
     const pronounInfo = await pronounAPI(`users/${user}`);
     if(pronounInfo != null && pronounInfo.length > 0) {
       return pronounInfo[0].pronoun_id;
     }
     return null;
   }
-  return async function(user){
+  return async function(user: string){
     const now = Date.now();
-    let foo = 'cached ';
     if(!(user in pronounCache) || (now - pronounCache[user].time >= maxCacheAge)) {
       pronounCache[user] = {
         time: now,
         val: await getPronounIdUncached(user)
       };
-      foo = 'not cached ';
     }
     const pronounID = pronounCache[user].val;
     if(pronounID === null) return null;
@@ -173,14 +171,14 @@ function setupPronounsStuff(){
 
 // SE event stuff
 
-window.addEventListener('onEventReceived', function (e) {
+window.addEventListener('onEventReceived', function (e: CustomEvent) {
   console.log(e);
   const handler = se_event_handlers[e.detail.listener];
   if(handler !== undefined) handler(e.detail);
   // else console.log(e);
 });
 
-window.addEventListener('onWidgetLoad', (e) => {
+window.addEventListener('onWidgetLoad', (e: CustomEvent) => {
   // userCurrency = e.detail.currency;
   fieldData = e.detail.fieldData;
   if(fieldData.use_pronouns_extension) getUserPronouns = setupPronounsStuff();
@@ -191,3 +189,6 @@ window.addEventListener('onWidgetLoad', (e) => {
 window.addEventListener('onSessionUpdate', function(e) {
   console.log('onSessionUpdate', e);
 });
+
+
+
