@@ -109,8 +109,25 @@ export interface SEEvent<Subtype extends keyof SEEventListenerDetailTypeMap = ke
 };
 
 
+type SEWidgetLoadEventData_RecentCommon = {
+    /** username */
+    name: string,
+    /** timestamp (ISO 8601) */
+    createdAt: string,
+    /**
+    " unique ID for example 'object:5024' "
+    NOTE: not sure if this one is actually there (at least for follower events), but the docs say it should be there
+    */
+    $hashKey: string,
+    /** event type */
+    type: string,
+};
+
 // generated from https://github.com/StreamElements/widgets/blob/master/CustomCode.md#possible-keys-within-data
+//  , then further modified manually
 // the bodged-together code i wrote to generate these - https://gist.github.com/adrianmgg/d531761d666122062a9bad54bb8ff237
+
+
 
 export interface SEWidgetLoadEventDataCommon {
     "merch-goal-items": {
@@ -125,7 +142,13 @@ export interface SEWidgetLoadEventDataCommon {
         /** Merch total goal progress */
         amount: number,
     },
-    /** An array containing latest Tip event */
+    /** latest merch event (my guess, this one isn't documented) */
+    "merch-latest": {
+        amount: number,
+        items: unknown[],
+        name: string,
+    },
+    /** latest Tip event */
     "tip-latest": {
         /** Latest tipper username */
         name: string,
@@ -133,63 +156,63 @@ export interface SEWidgetLoadEventDataCommon {
         amount: number,
         /** Latest tip message */
         message: string,
-    }[],
-    /** Aan array of top tip since session start */
+    },
+    /** top tip since session start */
     "tip-session-top-donation": {
         /** Username */
         name: string,
         /** Tip amount */
         amount: number,
-    }[],
-    /** An array of top tip in past week */
+    },
+    /** top tip in past week */
     "tip-weekly-top-donation": {
         /** Username */
         name: string,
         /** Tip amount */
         amount: number,
-    }[],
-    /** An array of top tip in past month */
+    },
+    /** top tip in past month */
     "tip-monthly-top-donation": {
         /** Tip amount */
         name: string,
         /** Username */
         amount: number,
-    }[],
-    /** An array of top tip all time */
+    },
+    /** top tip all time */
     "tip-alltime-top-donation": {
         /** Username */
         name: string,
         /** Tip amount */
         amount: number,
-    }[],
-    /** An array of top tipper since session start */
+    },
+    /** top tipper since session start */
     "tip-session-top-donator": {
         /** Username */
         name: string,
         /** Sum of the tip amounts */
         amount: number,
-    }[],
-    /** An array of top tip in past week */
+    },
+    /** top tip in past week */
     "tip-weekly-top-donator": {
         /** Username */
         name: string,
         /** Sum of the tip amounts */
         amount: number,
-    }[],
-    /** An array of top tip in past month */
+    },
+    /** top tip in past month */
     "tip-monthly-top-donator": {
         /** Tipper username */
         name: string,
         /** Sum of the tip amounts */
         amount: number,
-    }[],
-    /** An array of top tip all time */
+    },
+    /** top tip all time */
     "tip-alltime-top-donator": {
         /** Tipper username */
         name: string,
         /** Sum of the tip amounts */
         amount: number,
-    }[],
+    },
     "tip-session": {
         /** Sum of all donations since session start */
         amount: number,
@@ -214,6 +237,10 @@ export interface SEWidgetLoadEventDataCommon {
         /** Donation goal */
         amount: number,
     },
+    "tip-recent": (SEWidgetLoadEventData_RecentCommon & {
+        /** amount of tip */
+        amount: number,
+    })[],
 };
 
 export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon {
@@ -241,18 +268,24 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         /** Total count of followers */
         count: number,
     },
+    "follower-recent": {
+        /** follower name */
+        name: string,
+        /** date of follow, in ISO 8601 format */
+        createdAt: string,
+    }[],
     "subscriber-alltime-gifter": {
         /** Name of latest gifter */
         name: string,
         /** Number of gifted subs */
         amount: number,
-    }[],
+    },
     "subscriber-gifted-latest": {
         /** Name of latest gifter */
         name: string,
         /** Number of gifted subs */
         amount: number,
-    }[],
+    },
     "subscriber-gifted-session": {
         /** Number of gifted subs during session */
         count: number,
@@ -270,7 +303,7 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         sender: unknown,
         /** If it was a gift, here’s a gifted */
         gifted: unknown,
-    }[],
+    },
     "subscriber-new-latest": {
         /** Name of latest new sub */
         name: string,
@@ -278,7 +311,7 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         amount: number,
         /** user message */
         message: string,
-    }[],
+    },
     "subscriber-new-session": {
         /** Number of new subs during session */
         count: number,
@@ -290,7 +323,7 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         amount: number,
         /** user message */
         message: string,
-    }[],
+    },
     "subscriber-resub-session": {
         /** Number of resubs during session */
         count: number,
@@ -316,21 +349,34 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         count: number,
     },
     "subscriber-points": {
-        /** Subscriber points (used for unlocking additional channel emotes - more info on Twitch Partner Emoticon Guide) */
+        /** Subscriber points */
         amount: number,
     },
+    "subscriber-recent": (SEWidgetLoadEventData_RecentCommon & {
+        /** Subscriber tier (1000,2000,3000) */
+        tier: number,
+        /** amount of months */
+        amount: number,
+    })[],
     "host-latest": {
         /** Latest host */
         name: string,
         /** Number of viewers in latest host (can be 0) */
         amount: number,
     },
+    "host-recent": (SEWidgetLoadEventData_RecentCommon & {
+        /** amount of viewers **/
+        amount: number,
+    })[],
     "raid-latest": {
         /** Name of latest raider */
         name: string,
         /** Number of viewers in latest raid */
         amount: number,
     },
+    "raid-recent": (SEWidgetLoadEventData_RecentCommon & {
+        // TODO - docs seem to be copy-pasted from the wrong place here, what are they actually
+    })[],
     "cheer-session": {
         /** Cheers since session start */
         amount: number,
@@ -351,7 +397,7 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         /** Cheer goal */
         amount: number,
     },
-    /** An array containing latest Cheer event */
+    /** latest Cheer event */
     "cheer-latest": {
         /** Latest cheerer */
         name: string,
@@ -359,63 +405,71 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
         amount: number,
         /** Latest cheer message */
         message: string,
-    }[],
-    /** Aan array of top cheerer since session start */
+    },
+    /** top cheerer since session start */
     "cheer-session-top-donation": {
         /** Username */
         name: string,
         /** Cheer amount */
         amount: number,
-    }[],
-    /** An array of top cheer in past week */
+    },
+    /** top cheer in past week */
     "cheer-weekly-top-donation": {
         /** Username */
         name: string,
         /** Cheer amount */
         amount: number,
-    }[],
-    /** An array of top cheer in past month */
+    },
+    /** top cheer in past month */
     "cheer-monthly-top-donation": {
         /** Username */
         name: string,
         /** Cheer amount */
         amount: number,
-    }[],
-    /** An array of top cheer all time */
+    },
+    /** top cheer all time */
     "cheer-alltime-top-donation": {
         /** Username */
         name: string,
         /** Cheer amount */
         amount: number,
-    }[],
-    /** Aan array of top cheerer since session start */
+    },
+    /** top cheerer since session start */
     "cheer-session-top-donator": {
         /** Username */
         name: string,
         /** Sum of the cheer amounts */
         amount: number,
-    }[],
-    /** An array of top cheerer in past week */
+    },
+    /** top cheerer in past week */
     "cheer-weekly-top-donator": {
         /** Username */
         name: string,
         /** Sum of the cheer amounts */
         amount: number,
-    }[],
-    /** An array of top cheerer in past month */
+    },
+    /** top cheerer in past month */
     "cheer-monthly-top-donator": {
         /** Username */
         name: string,
         /** Sum of the cheer amounts */
         amount: number,
-    }[],
-    /** An array of top cheer all time */
+    },
+    /** top cheer all time */
     "cheer-alltime-top-donator": {
         /** Username */
         name: string,
         /** Sum of the cheer amounts */
         amount: number,
-    }[],
+    },
+    "cheer-week": {
+        /** not sure if this one is # of cheers or sum of cheers, it isn't publicly documented */
+        amount: number,
+    },
+    "cheer-recent": (SEWidgetLoadEventData_RecentCommon & {
+        /** amount of bits */
+        amount: number,
+    })[],
 };
 
 export interface SEWidgetLoadEvent extends CustomEvent {
