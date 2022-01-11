@@ -6,3 +6,11 @@
 .badges_container .badge {
   height: 1em;
 }
+
+.chat_root {
+  display: flex;
+  flex-direction: column-reverse;
+  position: absolute;
+  bottom: 0px;
+}
+

@@ -3,17 +3,17 @@
 // TODO twemoji integration
 // TODO auto text outline when needed (based on preset approximate color) (probably based on wcag contrast ratio)
 
-import { contrastRatio, parseHexColor } from './color';
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap } from './streamelements';
+import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 
 
 // let userCurrency; 
 
-let fieldData;
+let fieldData: any;
 
-let chat_root;
+let chat_root: Element;
 let chat_template: HTMLTemplateElement;
 
 function init() {
@@ -26,18 +26,19 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
     // color
     {
         // temp - randomize color
-        detail.event.data.displayColor = `#${Math.floor(Math.random()*255).toString(16).padStart(2,'0')}${Math.floor(Math.random()*255).toString(16).padStart(2,'0')}${Math.floor(Math.random()*255).toString(16).padStart(2,'0')}`;
+        detail.event.data.displayColor = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
     }
     setAllCSSVars(template_instance, {
         '--user-color': detail.event.data.displayColor,
     });
     {
-        const ratio = contrastRatio(
-            parseHexColor(detail.event.data.displayColor),
-            parseHexColor('#D2D2D2') // TODO factor out to field
+        const ratio = sRGBToAPCA(
+            hexToSRGB(detail.event.data.displayColor),
+            hexToSRGB('#D2D2D2'), // TODO factor out to field
         );
         console.log(ratio);
-        const outlineColor = (ratio >= 1.5) ? 'transparent' : 'black';
+        // const outlineColor = (Math.abs(ratio) >= 75) ? 'transparent' : 'black';
+        const outlineColor = (Math.abs(ratio) <= 30) ? 'black' : 'transparent';
         setAllCSSVars(template_instance, {
             '--user-color-outline': outlineColor,
         });
@@ -70,14 +71,14 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         else for(const el of username_secondary_elems) el.textContent = username_secondary;
     }
     // badges
-    for(const badge of detail.event.data.badges) {
+    for(const el of badges_container_elems) for(const badge of detail.event.data.badges) {
         const img = document.createElement('img');
         img.src = badge.url;
         img.setAttribute('data-badge-type', badge.type);
         img.classList.add('badge');
         // badge.description
         // badge.version
-        for(const el of badges_container_elems) el.appendChild(img);
+        el.appendChild(img);
     }
     // pronouns
     if(!fieldData.use_pronouns_extension) {
@@ -89,7 +90,7 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         });
     }
     //
-    chat_root.appendChild(template_instance);
+    chat_root.insertBefore(template_instance, chat_root.firstChild);
 }
 
 const se_event_handlers: { [K in keyof SEEventListenerDetailTypeMap]?: (x: SEEventListenerDetailTypeMap[K]) => void } = {
