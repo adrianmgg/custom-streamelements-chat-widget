@@ -5,7 +5,7 @@
 
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
-import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap } from './streamelements';
+import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent } from './streamelements';
 import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 
 
@@ -104,7 +104,7 @@ window.addEventListener('onEventReceived', function (e: SEEvent) {
     se_event_handlers[e.detail.listener]?.(e.detail as any);
 });
 
-window.addEventListener('onWidgetLoad', (e: CustomEvent) => {
+window.addEventListener('onWidgetLoad', (e: SEWidgetLoadEvent) => {
     // userCurrency = e.detail.currency;
     fieldData = e.detail.fieldData;
     

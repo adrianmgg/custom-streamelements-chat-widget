@@ -109,3 +109,327 @@ export interface SEEvent<Subtype extends keyof SEEventListenerDetailTypeMap = ke
 };
 
 
+// generated from https://github.com/StreamElements/widgets/blob/master/CustomCode.md#possible-keys-within-data
+// the bodged-together code i wrote to generate these - https://gist.github.com/adrianmgg/d531761d666122062a9bad54bb8ff237
+
+export interface SEWidgetLoadEventDataCommon {
+    "merch-goal-items": {
+        /** Merch items goal progress */
+        amount: number,
+    },
+    "merch-goal-orders": {
+        /** Merch orders goal progress */
+        amount: number,
+    },
+    "merch-goal-total": {
+        /** Merch total goal progress */
+        amount: number,
+    },
+    /** An array containing latest Tip event */
+    "tip-latest": {
+        /** Latest tipper username */
+        name: string,
+        /** Latest tip amount */
+        amount: number,
+        /** Latest tip message */
+        message: string,
+    }[],
+    /** Aan array of top tip since session start */
+    "tip-session-top-donation": {
+        /** Username */
+        name: string,
+        /** Tip amount */
+        amount: number,
+    }[],
+    /** An array of top tip in past week */
+    "tip-weekly-top-donation": {
+        /** Username */
+        name: string,
+        /** Tip amount */
+        amount: number,
+    }[],
+    /** An array of top tip in past month */
+    "tip-monthly-top-donation": {
+        /** Tip amount */
+        name: string,
+        /** Username */
+        amount: number,
+    }[],
+    /** An array of top tip all time */
+    "tip-alltime-top-donation": {
+        /** Username */
+        name: string,
+        /** Tip amount */
+        amount: number,
+    }[],
+    /** An array of top tipper since session start */
+    "tip-session-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the tip amounts */
+        amount: number,
+    }[],
+    /** An array of top tip in past week */
+    "tip-weekly-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the tip amounts */
+        amount: number,
+    }[],
+    /** An array of top tip in past month */
+    "tip-monthly-top-donator": {
+        /** Tipper username */
+        name: string,
+        /** Sum of the tip amounts */
+        amount: number,
+    }[],
+    /** An array of top tip all time */
+    "tip-alltime-top-donator": {
+        /** Tipper username */
+        name: string,
+        /** Sum of the tip amounts */
+        amount: number,
+    }[],
+    "tip-session": {
+        /** Sum of all donations since session start */
+        amount: number,
+    },
+    "tip-week": {
+        /** Sum of all donations this week */
+        amount: number,
+    },
+    "tip-month": {
+        /** Sum of all donations this month */
+        amount: number,
+    },
+    "tip-total": {
+        /** Sum of all donations this all time */
+        amount: number,
+    },
+    "tip-count": {
+        /** Number of tip events */
+        count: number,
+    },
+    "tip-goal": {
+        /** Donation goal */
+        amount: number,
+    },
+};
+
+export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon {
+    "follower-latest": {
+        /** Name of latest follower */
+        name: string,
+    },
+    "follower-session": {
+        /** Followers since session start */
+        count: number,
+    },
+    "follower-week": {
+        /** Followers this week */
+        count: number,
+    },
+    "follower-month": {
+        /** Followers this month */
+        count: number,
+    },
+    "follower-goal": {
+        /** Followers goal */
+        amount: number,
+    },
+    "follower-total": {
+        /** Total count of followers */
+        count: number,
+    },
+    "subscriber-alltime-gifter": {
+        /** Name of latest gifter */
+        name: string,
+        /** Number of gifted subs */
+        amount: number,
+    }[],
+    "subscriber-gifted-latest": {
+        /** Name of latest gifter */
+        name: string,
+        /** Number of gifted subs */
+        amount: number,
+    }[],
+    "subscriber-gifted-session": {
+        /** Number of gifted subs during session */
+        count: number,
+    },
+    "subscriber-latest": {
+        /** Name of latest sub */
+        name: string,
+        /** Duration in months */
+        amount: number,
+        /** Tier of sub (1-3) */
+        tier: unknown,
+        /** Message attached to sub action */
+        message: string,
+        /** If it was a gift, here’s a gifter */
+        sender: unknown,
+        /** If it was a gift, here’s a gifted */
+        gifted: unknown,
+    }[],
+    "subscriber-new-latest": {
+        /** Name of latest new sub */
+        name: string,
+        /** Number of months (1) */
+        amount: number,
+        /** user message */
+        message: string,
+    }[],
+    "subscriber-new-session": {
+        /** Number of new subs during session */
+        count: number,
+    },
+    "subscriber-resub-latest": {
+        /** Name of latest resub */
+        name: string,
+        /** Number of months */
+        amount: number,
+        /** user message */
+        message: string,
+    }[],
+    "subscriber-resub-session": {
+        /** Number of resubs during session */
+        count: number,
+    },
+    "subscriber-session": {
+        /** Subscribers since session start */
+        count: number,
+    },
+    "subscriber-week": {
+        /** Subscribers this week */
+        count: number,
+    },
+    "subscriber-month": {
+        /** Subscribers this month */
+        count: number,
+    },
+    "subscriber-goal": {
+        /** Subscribers goal */
+        amount: number,
+    },
+    "subscriber-total": {
+        /** Total count of subscribers */
+        count: number,
+    },
+    "subscriber-points": {
+        /** Subscriber points (used for unlocking additional channel emotes - more info on Twitch Partner Emoticon Guide) */
+        amount: number,
+    },
+    "host-latest": {
+        /** Latest host */
+        name: string,
+        /** Number of viewers in latest host (can be 0) */
+        amount: number,
+    },
+    "raid-latest": {
+        /** Name of latest raider */
+        name: string,
+        /** Number of viewers in latest raid */
+        amount: number,
+    },
+    "cheer-session": {
+        /** Cheers since session start */
+        amount: number,
+    },
+    "cheer-month": {
+        /** Cheers this month */
+        amount: number,
+    },
+    "cheer-total": {
+        /** Total amount of cheers */
+        amount: number,
+    },
+    "cheer-count": {
+        /** Number of cheer events */
+        count: number,
+    },
+    "cheer-goal": {
+        /** Cheer goal */
+        amount: number,
+    },
+    /** An array containing latest Cheer event */
+    "cheer-latest": {
+        /** Latest cheerer */
+        name: string,
+        /** Latest cheer amount */
+        amount: number,
+        /** Latest cheer message */
+        message: string,
+    }[],
+    /** Aan array of top cheerer since session start */
+    "cheer-session-top-donation": {
+        /** Username */
+        name: string,
+        /** Cheer amount */
+        amount: number,
+    }[],
+    /** An array of top cheer in past week */
+    "cheer-weekly-top-donation": {
+        /** Username */
+        name: string,
+        /** Cheer amount */
+        amount: number,
+    }[],
+    /** An array of top cheer in past month */
+    "cheer-monthly-top-donation": {
+        /** Username */
+        name: string,
+        /** Cheer amount */
+        amount: number,
+    }[],
+    /** An array of top cheer all time */
+    "cheer-alltime-top-donation": {
+        /** Username */
+        name: string,
+        /** Cheer amount */
+        amount: number,
+    }[],
+    /** Aan array of top cheerer since session start */
+    "cheer-session-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the cheer amounts */
+        amount: number,
+    }[],
+    /** An array of top cheerer in past week */
+    "cheer-weekly-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the cheer amounts */
+        amount: number,
+    }[],
+    /** An array of top cheerer in past month */
+    "cheer-monthly-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the cheer amounts */
+        amount: number,
+    }[],
+    /** An array of top cheer all time */
+    "cheer-alltime-top-donator": {
+        /** Username */
+        name: string,
+        /** Sum of the cheer amounts */
+        amount: number,
+    }[],
+};
+
+export interface SEWidgetLoadEvent extends CustomEvent {
+    detail: {
+        session: {
+            data: SEWidgetLoadEventDataTwitch,
+        },
+        recents: unknown,
+        currency: unknown,
+        channel: {
+            username: string,
+            apiToken: string,
+        },
+        fieldData: unknown,
+    },
+};
+
