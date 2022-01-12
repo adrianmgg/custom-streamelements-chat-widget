@@ -1,11 +1,13 @@
 const path = require('path');
 const rollup = require('rollup');
-const rollup_ts = require('@rollup/plugin-typescript');
+// const rollup_ts = require('@rollup/plugin-typescript');
+const rollup_ts = require('rollup-plugin-typescript2');
+const { nodeResolve: rollup_noderesolve } = require('@rollup/plugin-node-resolve');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 
 function standard_prebuild({infile, outfile}) {
-	fsPromises.mkdir( path.dirname(outfile), {recursive: true} );
+	return fsPromises.mkdir( path.dirname(outfile), {recursive: true} );
 }
 
 const build_copyfile = async ({infile, outfile}) => {
@@ -30,7 +32,16 @@ const targets = [
 	{
 		infile: './src/ts/main.ts',
 		outfile: './build/js.js',
-		build: build_rollup({plugins: [rollup_ts()]}, {format: 'es'}), // not cached b/c depends on other files and i havent implemented that yet
+		build: build_rollup({
+			plugins: [
+				rollup_ts({
+					// verbosity:3,
+				}),
+				rollup_noderesolve(),
+			],
+		}, {
+			format: 'es'
+		}), // not cached b/c depends on other files and i havent implemented that yet
 		clean: clean_deletefile,
 	},
 	...(['css.css', 'html.html', 'fields.json', 'data.json'].map(f=>({

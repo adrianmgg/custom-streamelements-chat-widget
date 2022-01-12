@@ -7,7 +7,7 @@ import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent } from './streamelements';
 import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
-
+import * as elhelper from '@amgg/elhelper';
 
 // let userCurrency; 
 
@@ -52,7 +52,33 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
     const username_secondary_container_elems = template_instance.getElementsByClassName('username_secondary_container') as HTMLCollectionOf<HTMLElement>;
     const username_secondary_elems = template_instance.getElementsByClassName('username_secondary') as HTMLCollectionOf<HTMLElement>;
     // message
-    for(const el of message_elems) el.textContent = detail.event.data.text;
+    // for(const el of message_elems) el.textContent = detail.event.data.text;
+    {
+        // emotes
+        let prev_end: number = 0;
+        for(const emote of detail.event.data.emotes) {
+            const txt_before_emote = detail.event.data.text.slice(prev_end, emote.start);
+            if(txt_before_emote.length > 0) {
+                for(const el of message_elems) el.appendChild(document.createTextNode(txt_before_emote));
+            }
+            for(const el of message_elems) {
+                elhelper.create('img', {
+                    parent: el,
+                    src: emote.urls[4],
+                    classList: ['emote'],
+                    dataset: {
+                        emoteType: emote.type,
+                        emoteName: detail.event.data.text.slice(emote.start, emote.end + 1),
+                    },
+                });
+            }
+            prev_end = emote.end + 1;
+        }
+        const txt = detail.event.data.text.slice(prev_end, detail.event.data.text.length);
+        if(txt.length > 0) {
+            for(const el of message_elems) el.appendChild(document.createTextNode(txt));
+        }
+    }
     // username
     {
         let username_primary = null, username_secondary = null;
@@ -72,13 +98,16 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
     }
     // badges
     for(const el of badges_container_elems) for(const badge of detail.event.data.badges) {
-        const img = document.createElement('img');
-        img.src = badge.url;
-        img.setAttribute('data-badge-type', badge.type);
-        img.classList.add('badge');
+        elhelper.create('img', {
+            parent: el,
+            src: badge.url,
+            dataset: {
+                badgeType: badge.type,
+            },
+            classList: ['badge'],
+        });
         // badge.description
         // badge.version
-        el.appendChild(img);
     }
     // pronouns
     if(!fieldData.use_pronouns_extension) {

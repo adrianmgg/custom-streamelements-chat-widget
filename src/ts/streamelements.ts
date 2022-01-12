@@ -28,7 +28,7 @@ export interface SEChatMessageEventDetail {
                 /** end index of emote in message (exclusive) */
                 end: number,
                 id: string,
-                type: 'bttv' | 'twitch', // TODO get a more complete list of these
+                type: 'twitch' | 'bttv' | 'ffz', // TODO get a more complete list of these
                 urls: { // TODO is it always like this?
                     1: string,
                     2: string,

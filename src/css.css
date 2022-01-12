@@ -5,6 +5,12 @@
 
 .badges_container .badge {
   height: 1em;
+  vertical-align: middle;
+}
+
+.emote {
+  height: 1.7em;
+  vertical-align: middle;
 }
 
 .chat_root {
