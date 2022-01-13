@@ -5,13 +5,16 @@
 
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
-import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent } from './streamelements';
+import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData } from './streamelements';
 import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 import * as elhelper from '@amgg/elhelper';
+import { MyFields } from './fields';
+
+type MyFieldData = Fields2FieldData<MyFields>;
 
 // let userCurrency; 
 
-let fieldData: any;
+let fieldData: MyFieldData;
 
 let chat_root: Element;
 let chat_template: HTMLTemplateElement;
@@ -133,7 +136,7 @@ window.addEventListener('onEventReceived', function (e: SEEvent) {
     se_event_handlers[e.detail.listener]?.(e.detail as any);
 });
 
-window.addEventListener('onWidgetLoad', (e: SEWidgetLoadEvent) => {
+window.addEventListener('onWidgetLoad', (e: SEWidgetLoadEvent<MyFieldData>) => {
     // userCurrency = e.detail.currency;
     fieldData = e.detail.fieldData;
     

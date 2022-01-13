@@ -472,7 +472,7 @@ export interface SEWidgetLoadEventDataTwitch extends SEWidgetLoadEventDataCommon
     })[],
 };
 
-export interface SEWidgetLoadEvent extends CustomEvent {
+export interface SEWidgetLoadEvent<FieldData extends Record<string, unknown> = Record<string, unknown>> extends CustomEvent {
     detail: {
         session: {
             data: SEWidgetLoadEventDataTwitch,
@@ -483,7 +483,85 @@ export interface SEWidgetLoadEvent extends CustomEvent {
             username: string,
             apiToken: string,
         },
-        fieldData: unknown,
+        fieldData: FieldData,
     },
 };
+
+
+
+export interface FieldsBase {
+    type: string;
+    label: string;
+    value?: unknown;
+}
+export interface FieldsText extends FieldsBase{
+    type: 'text';
+    value?: string;
+}
+export interface FieldsCheckbox extends FieldsBase {
+    type: 'checkbox';
+    value?: boolean;
+}
+export interface FieldsColorpicker extends FieldsBase {
+    type: 'colorpicker';
+    value?: string;
+}
+export interface FieldsNumber extends FieldsBase {
+    type: 'number';
+    value?: number;
+    min: number;
+    max: number;
+    step: number;
+}
+export interface FieldsSlider extends FieldsBase {
+    type: 'slider';
+    value?: number;
+    min: number;
+    max: number;
+    step?: number;
+}
+export interface FieldsDropdown extends FieldsBase {
+    type: 'dropdown';
+    value?: string;
+    options: Record<string, string>;
+}
+export interface FieldsImage extends FieldsBase {
+    type: 'image-input';
+    value?: string;
+}
+export interface FieldsVideo extends FieldsBase {
+    type: 'video-input';
+    value?: string;
+}
+export interface FieldsSound extends FieldsBase {
+    type: 'sound-input';
+    value?: string;
+}
+export interface FieldsGooglefont extends FieldsBase {
+    type: 'googleFont';
+    value?: string;
+}
+export interface FieldsButton extends FieldsBase {
+    type: 'button';
+    value?: string;
+}
+export interface FieldsHidden extends FieldsBase {
+    type: 'hidden';
+    value?: string;
+}
+
+export type FieldsAll = FieldsText | FieldsCheckbox | FieldsColorpicker | FieldsNumber | FieldsSlider | FieldsDropdown | FieldsImage | FieldsVideo | FieldsSound | FieldsGooglefont | FieldsButton | FieldsHidden;
+
+// export type FieldData2FieldDataType<F extends FieldsAll> = F['value'];
+
+type Foo = {
+    bar: FieldsCheckbox;
+    baz: FieldsDropdown;
+    qux: FieldsSlider;
+};
+
+export type Fields2FieldData<Fields extends Record<string, FieldsAll>> = {
+    [K in keyof Fields]: Fields[K]['value']
+};
+
 
