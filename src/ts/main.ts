@@ -1,8 +1,3 @@
-// TODO auto google fonts support
-// TODO pronouns extension integration
-// TODO twemoji integration
-// TODO auto text outline when needed (based on preset approximate color) (probably based on wcag contrast ratio)
-
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData } from './streamelements';
