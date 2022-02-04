@@ -61,7 +61,7 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         let prev_end: number = 0;
         for(const emote of detail.event.data.emotes) {
             const txt_before_emote = detail.event.data.text.slice(prev_end, emote.start);
-            if(txt_before_emote.length > 0) {
+            if(txt_before_emote.length > 0 && !(fieldData.remove_emote_gap && txt_before_emote === ' ')) {
                 for(const el of message_elems) el.appendChild(document.createTextNode(txt_before_emote));
             }
             for(const el of message_elems) {
@@ -75,10 +75,10 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
                     },
                 });
             }
-            prev_end = emote.end + 1;
+            prev_end = emote.end;
         }
         const txt = detail.event.data.text.slice(prev_end, detail.event.data.text.length);
-        if(txt.length > 0) {
+        if(txt.length > 0 && !(fieldData.remove_emote_gap && txt === ' ')) {
             for(const el of message_elems) el.appendChild(document.createTextNode(txt));
         }
     }

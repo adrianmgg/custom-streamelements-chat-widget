@@ -1,12 +1,12 @@
 import { FieldsAll, FieldsCheckbox, FieldsDropdown } from './streamelements';
 
-// export interface MyFields {
 export type MyFields = {
 	use_pronouns_extension: FieldsCheckbox;
 	localized_name_mode: FieldsDropdown;
+	remove_emote_gap: FieldsCheckbox;
 };
 
-export const fields: MyFields = {
+export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
 	use_pronouns_extension: {
 		type: 'checkbox',
 		label: 'Chat Pronouns Integration',
@@ -20,6 +20,11 @@ export const fields: MyFields = {
 			both: 'both',
 		},
 		value: 'both',
+	},
+	remove_emote_gap: {
+		type: 'checkbox',
+		label: 'remove gap between emotes',
+		value: false,
 	},
 };
 
