@@ -1,6 +1,7 @@
-import { FieldsAll, FieldsCheckbox, FieldsDropdown } from './streamelements';
+import { FieldsAll, FieldsCheckbox, FieldsDropdown, FieldsNumber } from './streamelements';
 
 export type MyFields = {
+	history_size: FieldsNumber,
 	use_pronouns_extension: FieldsCheckbox;
 	localized_name_mode: FieldsDropdown;
 	remove_emote_gap: FieldsCheckbox;
@@ -8,6 +9,14 @@ export type MyFields = {
 };
 
 export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
+	history_size: {
+		type: 'number',
+		min: 0,
+		max: 512,  // TODO arbitrary max, what would a good choice be?
+		step: 1,
+		label: 'how many messages back to remember',
+		value: 128,
+	},
 	use_pronouns_extension: {
 		type: 'checkbox',
 		label: 'Chat Pronouns Integration',

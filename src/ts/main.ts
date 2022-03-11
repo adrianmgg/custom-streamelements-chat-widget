@@ -1,7 +1,7 @@
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData } from './streamelements';
-import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
+// import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 import * as elhelper from '@amgg/elhelper';
 import { MyFields } from './fields';
 import * as twemojiparser from 'twemoji-parser';
@@ -31,13 +31,17 @@ function* parse_standard_emotes(detail: SEChatMessageEventDetail): Generator<str
     for(const emote of detail.event.data.emotes) {
         // ignore streamelements's built in parsing of the emojis, which are (at time of writing) basically useless since they don't include start/end indices
         if(emote.type === 'emoji') continue;
+        // twitch ones have inclusive end idx, bttv/ffz have exclusive end idx.
+        let end_idx =
+            (detail.event.data.text[emote.end] === ' ') ?
+            emote.end : (emote.end + 1);
         yield detail.event.data.text.slice(prev_idx, emote.start);
         yield {
             src: emote.urls[4],
             type: emote.type,
-            text: detail.event.data.text.slice(emote.start, emote.end),
+            text: detail.event.data.text.slice(emote.start, end_idx),
         };
-        prev_idx = emote.end;
+        prev_idx = end_idx;
     }
     yield detail.event.data.text.slice(prev_idx, detail.event.data.text.length);
 }
@@ -63,17 +67,24 @@ function* chain_emote_parsers(g: Generator<string | ParsedEmote, void, undefined
     }
 }
 
+function clear_old_messages() {
+    while(chat_root.childNodes.length > fieldData.history_size) {
+        chat_root.removeChild(chat_root.childNodes[0]);
+    }
+}
+
 function handle_chat_message(detail: SEChatMessageEventDetail) {
     const template_instance = chat_template.content.firstElementChild.cloneNode(true) as HTMLElement | SVGElement;
     // color
     {
         // temp - randomize color
-        detail.event.data.displayColor = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
+        // detail.event.data.displayColor = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
     }
     setAllCSSVars(template_instance, {
         '--user-color': detail.event.data.displayColor,
     });
-    {
+    // APCA stuff, disabled for now cuz it's not finished
+    /* {
         const ratio = sRGBToAPCA(
             hexToSRGB(detail.event.data.displayColor),
             hexToSRGB('#D2D2D2'), // TODO factor out to field
@@ -84,7 +95,7 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         setAllCSSVars(template_instance, {
             '--user-color-outline': outlineColor,
         });
-    }
+    } */
     // fill in text
     const username_elems = template_instance.getElementsByClassName('username') as HTMLCollectionOf<HTMLElement>;
     const message_elems = template_instance.getElementsByClassName('message') as HTMLCollectionOf<HTMLElement>;
@@ -159,7 +170,9 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         });
     }
     //
-    chat_root.insertBefore(template_instance, chat_root.firstChild);
+    chat_root.appendChild(template_instance);
+    //
+    clear_old_messages();
 }
 
 const se_event_handlers: { [K in keyof SEEventListenerDetailTypeMap]?: (x: SEEventListenerDetailTypeMap[K]) => void } = {
