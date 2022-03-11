@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as rollup from 'rollup';
 const rollup_ts = require('rollup-plugin-typescript2');
 import { nodeResolve as rollup_noderesolve } from '@rollup/plugin-node-resolve';
+const rollup_commonjs = require('@rollup/plugin-commonjs');
 import * as fsPromises from 'fs/promises';
 import generate_fields from './src/ts/generate_fields';
 
@@ -42,6 +43,7 @@ const targets: Target[] = [
 					// verbosity:3,
 				}),
 				rollup_noderesolve(),
+				rollup_commonjs(),
 			],
 		}, {
 			format: 'es'

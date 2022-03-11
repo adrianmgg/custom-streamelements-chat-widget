@@ -4,6 +4,7 @@ import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidg
 import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 import * as elhelper from '@amgg/elhelper';
 import { MyFields } from './fields';
+import * as twemojiparser from 'twemoji-parser';
 
 type MyFieldData = Fields2FieldData<MyFields>;
 
@@ -16,7 +17,50 @@ let chat_template: HTMLTemplateElement;
 
 function init() {
     chat_root = document.getElementsByClassName('chat_root')?.[0];
-    chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXE actually check instead of just casting
+    chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXME actually check instead of just casting
+}
+
+interface ParsedEmote {
+    src: string;
+    type: string;
+    text: string;
+}
+
+function* parse_standard_emotes(detail: SEChatMessageEventDetail): Generator<string | ParsedEmote, void, undefined> {
+    let prev_idx: number = 0;
+    for(const emote of detail.event.data.emotes) {
+        // ignore streamelements's built in parsing of the emojis, which are (at time of writing) basically useless since they don't include start/end indices
+        if(emote.type === 'emoji') continue;
+        yield detail.event.data.text.slice(prev_idx, emote.start);
+        yield {
+            src: emote.urls[4],
+            type: emote.type,
+            text: detail.event.data.text.slice(emote.start, emote.end),
+        };
+        prev_idx = emote.end;
+    }
+    yield detail.event.data.text.slice(prev_idx, detail.event.data.text.length);
+}
+
+function* parse_twemojis(s: string): Generator<string | ParsedEmote, void, undefined> {
+    let prev_idx: number = 0;
+    for(const emoji of twemojiparser.parse(s)) {
+        yield s.slice(prev_idx, emoji.indices[0]);
+        yield {
+            src: emoji.url,
+            type: 'twemoji',
+            text: emoji.text,
+        };
+        prev_idx = emoji.indices[1];
+    }
+    yield s.slice(prev_idx, s.length);
+}
+
+function* chain_emote_parsers(g: Generator<string | ParsedEmote, void, undefined>, f: (s: string) => Generator<string | ParsedEmote, void, undefined>): Generator<string | ParsedEmote, void, undefined> {
+    for(const x of g) {
+        if(typeof x === 'string') yield* f(x);
+        else yield x;
+    }
 }
 
 function handle_chat_message(detail: SEChatMessageEventDetail) {
@@ -53,28 +97,26 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
     // for(const el of message_elems) el.textContent = detail.event.data.text;
     {
         // emotes
-        let prev_end: number = 0;
-        for(const emote of detail.event.data.emotes) {
-            const txt_before_emote = detail.event.data.text.slice(prev_end, emote.start);
-            if(txt_before_emote.length > 0 && !(fieldData.remove_emote_gap && txt_before_emote === ' ')) {
-                for(const el of message_elems) el.appendChild(document.createTextNode(txt_before_emote));
+        let emotes = parse_standard_emotes(detail);
+        if(fieldData.use_twemoji) emotes = chain_emote_parsers(emotes, parse_twemojis);
+        for(const entry of emotes) {
+            if(typeof entry === 'string') {
+                if(entry.length === 0) continue;
+                if(entry === ' ' && fieldData.remove_emote_gap) continue;
+                for(const el of message_elems) el.appendChild(document.createTextNode(entry));
+            } else {
+                for(const el of message_elems) {
+                    elhelper.create('img', {
+                        parent: el,
+                        src: entry.src,
+                        classList: ['emote'],
+                        dataset: {
+                            emoteType: entry.type,
+                            emoteName: entry.text,
+                        },
+                    });
+                }
             }
-            for(const el of message_elems) {
-                elhelper.create('img', {
-                    parent: el,
-                    src: emote.urls[4],
-                    classList: ['emote'],
-                    dataset: {
-                        emoteType: emote.type,
-                        emoteName: detail.event.data.text.slice(emote.start, emote.end + 1),
-                    },
-                });
-            }
-            prev_end = emote.end;
-        }
-        const txt = detail.event.data.text.slice(prev_end, detail.event.data.text.length);
-        if(txt.length > 0 && !(fieldData.remove_emote_gap && txt === ' ')) {
-            for(const el of message_elems) el.appendChild(document.createTextNode(txt));
         }
     }
     // username

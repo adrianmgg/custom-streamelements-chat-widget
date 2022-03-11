@@ -4,6 +4,7 @@ export type MyFields = {
 	use_pronouns_extension: FieldsCheckbox;
 	localized_name_mode: FieldsDropdown;
 	remove_emote_gap: FieldsCheckbox;
+	use_twemoji: FieldsCheckbox;
 };
 
 export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
@@ -24,6 +25,11 @@ export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
 	remove_emote_gap: {
 		type: 'checkbox',
 		label: 'remove gap between emotes',
+		value: false,
+	},
+	use_twemoji: {
+		type: 'checkbox',
+		label: 'use twemoji for emojis',
 		value: false,
 	},
 };

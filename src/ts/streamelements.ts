@@ -22,7 +22,7 @@ export interface SEChatMessageEventDetail {
             */
             displayName: string,
             /** emotes in the message */
-            emotes: {
+            emotes: ({
                 /** start index of emote in message (inclusive) */
                 start: number,
                 /** end index of emote in message (exclusive) */
@@ -34,7 +34,16 @@ export interface SEChatMessageEventDetail {
                     2: string,
                     4: string,
                 },
-            }[],
+                gif: boolean;
+            } | {
+                id: string;
+                name: string;
+                type: 'emoji';
+                urls: {
+                    1: string;
+                };
+                gif: boolean;
+            })[],
             /** whether this message is a /me command */
             isAction: boolean,
             msgId: string,
