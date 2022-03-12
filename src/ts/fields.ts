@@ -1,7 +1,7 @@
 import { FieldsAll, FieldsCheckbox, FieldsDropdown, FieldsNumber } from './streamelements';
 
 export type MyFields = {
-	history_size: FieldsNumber,
+	history_size: FieldsNumber;
 	use_pronouns_extension: FieldsCheckbox;
 	localized_name_mode: FieldsDropdown;
 	remove_emote_gap: FieldsCheckbox;

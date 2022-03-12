@@ -81,6 +81,20 @@ export interface SEChatMessageEventDetail {
     },
 };
 
+export interface SEChatDeleteMessageEventDetail {
+    event: {
+        /** id of message to be removed */
+        msgId: string,
+    };
+};
+
+export interface SEChatDeleteMessagesEventDetail {
+    event: {
+        /** if deleting for specific user, id of that user. if clearing chat, undefined. */
+        userId: string | undefined;
+    };
+};
+
 export type SEEventListenerDetailTypeMap = {
     // "New Follower"
     'follower-latest': {},  // TODO
@@ -95,11 +109,11 @@ export type SEEventListenerDetailTypeMap = {
     // "New raid"
     'raid-latest': {},  // TODO
     // "New chat message received"
-    'message': SEChatMessageEventDetail,  // TODO
+    'message': SEChatMessageEventDetail,
     // "Chat message removed"
-    'delete-message': {},  // TODO
+    'delete-message': SEChatDeleteMessageEventDetail,
     // "Chat messages by userId removed"
-    'delete-messages': {},  // TODO
+    'delete-messages': SEChatDeleteMessagesEventDetail,
     // "User clicked "skip alert" button in activity feed"
     'event:skip': {},  // TODO
     // "Update of bot counter"
@@ -111,10 +125,9 @@ export type SEEventListenerDetailTypeMap = {
 };
 
 export interface SEEvent<Subtype extends keyof SEEventListenerDetailTypeMap = keyof SEEventListenerDetailTypeMap> extends CustomEvent {
-    detail: {
+    detail: ({
         listener: Subtype,
-        event: SEEventListenerDetailTypeMap[Subtype],
-    },
+    } & SEEventListenerDetailTypeMap[Subtype]),
 };
 
 

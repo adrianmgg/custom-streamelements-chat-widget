@@ -1,6 +1,6 @@
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
-import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData } from './streamelements';
+import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData, SEChatDeleteMessagesEventDetail, SEChatDeleteMessageEventDetail } from './streamelements';
 // import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
 import * as elhelper from '@amgg/elhelper';
 import { MyFields } from './fields';
@@ -170,13 +170,43 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         });
     }
     //
+    {
+        template_instance.dataset.userId = detail.event.data.userId;
+        template_instance.dataset.msgId = detail.event.data.msgId;
+    }
+    //
     chat_root.appendChild(template_instance);
     //
     clear_old_messages();
 }
 
+function handle_delete_messages(detail: SEChatDeleteMessagesEventDetail) {
+    if(detail.event.userId === undefined) {  // clear all
+        while(chat_root.childNodes.length > 0) {
+            chat_root.removeChild(chat_root.childNodes[0]);
+        }
+    } else { // clear for specific user
+        // note the Array.from, need to freeze the children array since we're removing stuff as we iterate
+        for(const msg of Array.from(chat_root.children)) {
+            if(msg.getAttribute('data-user-id') === detail.event.userId) {
+                chat_root.removeChild(msg);
+            }
+        }
+    }
+}
+
+function handle_delete_message(detail: SEChatDeleteMessageEventDetail) {
+    for(const msg of Array.from(chat_root.children)) {
+        if(msg.getAttribute('data-msg-id') === detail.event.msgId) {
+            chat_root.removeChild(msg);
+        }
+    }
+}
+
 const se_event_handlers: { [K in keyof SEEventListenerDetailTypeMap]?: (x: SEEventListenerDetailTypeMap[K]) => void } = {
     message: handle_chat_message,
+    'delete-messages': handle_delete_messages,
+    'delete-message': handle_delete_message,
 };
 
 // SE event stuff
