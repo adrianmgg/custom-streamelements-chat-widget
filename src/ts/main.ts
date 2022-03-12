@@ -1,7 +1,7 @@
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData, SEChatDeleteMessagesEventDetail, SEChatDeleteMessageEventDetail } from './streamelements';
-// import { sRGBToAPCA, hexToSRGB, srgbToHex } from './color';
+import { srgbToHex } from './color';
 import * as elhelper from '@amgg/elhelper';
 import { MyFields } from './fields';
 import * as twemojiparser from 'twemoji-parser';
@@ -14,6 +14,8 @@ let fieldData: MyFieldData;
 
 let chat_root: Element;
 let chat_template: HTMLTemplateElement;
+
+const userId2random_color = {};
 
 function init() {
     chat_root = document.getElementsByClassName('chat_root')?.[0];
@@ -79,10 +81,30 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
     {
         // temp - randomize color
         // detail.event.data.displayColor = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
+        let name_color = detail.event.data.displayColor;
+        if(name_color === '') {
+            switch(fieldData.unspecified_name_color_source) {
+                case 'random_per_session':
+                    if(detail.event.data.userId in userId2random_color) {
+                        name_color = userId2random_color[detail.event.data.userId];
+                    } else {
+                        // TODO improve random color picking
+                        name_color = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
+                        userId2random_color[detail.event.data.userId] = name_color;
+                    }
+                    break;
+                case 'random_per_message':
+                    name_color = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
+                    break;
+                case 'constant':
+                    name_color = fieldData.unspecified_name_color_constant_color;
+                    break;
+            }
+        }
+        setAllCSSVars(template_instance, {
+            '--user-color': name_color,
+        });
     }
-    setAllCSSVars(template_instance, {
-        '--user-color': detail.event.data.displayColor,
-    });
     // APCA stuff, disabled for now cuz it's not finished
     /* {
         const ratio = sRGBToAPCA(

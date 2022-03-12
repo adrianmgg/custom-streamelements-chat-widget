@@ -542,10 +542,13 @@ export interface FieldsSlider extends FieldsBase {
     max: number;
     step?: number;
 }
-export interface FieldsDropdown extends FieldsBase {
+export interface FieldsDropdown<Keys extends string> extends FieldsBase {
     type: 'dropdown';
-    value?: string;
-    options: Record<string, string>;
+    value?: Keys;
+    // options: Record<string, string>;
+    options: {
+        [Key in Keys]: string
+    },
 }
 export interface FieldsImage extends FieldsBase {
     type: 'image-input';
