@@ -1,7 +1,7 @@
 import { getUserPronouns } from './pronouns_extension_api';
 import { setAllCSSVars } from './util';
 import { SEEvent, SEChatMessageEventDetail, SEEventListenerDetailTypeMap, SEWidgetLoadEvent, Fields2FieldData, SEChatDeleteMessagesEventDetail, SEChatDeleteMessageEventDetail } from './streamelements';
-import { srgbToHex } from './color';
+import { random_twitch_user_color} from './color';
 import * as elhelper from '@amgg/elhelper';
 import { MyFields } from './fields';
 import * as twemojiparser from 'twemoji-parser';
@@ -15,8 +15,6 @@ let fieldData: MyFieldData;
 let chat_root: HTMLElement;
 let chat_template: HTMLTemplateElement;
 
-const userId2random_color = {};
-
 function init() {
     chat_root = document.getElementsByClassName('chat_root')?.[0] as HTMLElement;
     chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXME actually check instead of just casting
@@ -28,6 +26,19 @@ interface ParsedEmote {
     type: string;
     text: string;
 }
+
+// TODO improve random color picking
+const get_usercolor: ({ [K in MyFieldData['unspecified_name_color_source']]: (userId: string) => string }) = {
+    random_per_message: (_userId: string) => random_twitch_user_color(),
+    random_per_session: (() => {
+        const userId2random_color = {};
+        return (userId: string) => {
+            if(userId in userId2random_color) return userId2random_color[userId];
+            return userId2random_color[userId] = random_twitch_user_color();
+        };
+    })(),
+    constant: (_userId: string) => fieldData.unspecified_name_color_constant_color,
+};
 
 function* parse_standard_emotes(detail: SEChatMessageEventDetail): Generator<string | ParsedEmote, void, undefined> {
     let prev_idx: number = 0;
@@ -109,23 +120,7 @@ function handle_chat_message(detail: SEChatMessageEventDetail) {
         // detail.event.data.displayColor = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
         let name_color = detail.event.data.displayColor;
         if(name_color === '') {
-            switch(fieldData.unspecified_name_color_source) {
-                case 'random_per_session':
-                    if(detail.event.data.userId in userId2random_color) {
-                        name_color = userId2random_color[detail.event.data.userId];
-                    } else {
-                        // TODO improve random color picking
-                        name_color = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
-                        userId2random_color[detail.event.data.userId] = name_color;
-                    }
-                    break;
-                case 'random_per_message':
-                    name_color = srgbToHex([Math.floor(Math.random()*255), Math.floor(Math.random()*255), Math.floor(Math.random()*255)]);
-                    break;
-                case 'constant':
-                    name_color = fieldData.unspecified_name_color_constant_color;
-                    break;
-            }
+            name_color = get_usercolor[fieldData.unspecified_name_color_source](detail.event.data.userId);
         }
         setAllCSSVars(template_instance, {
             '--user-color': name_color,

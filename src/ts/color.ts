@@ -1,3 +1,5 @@
+import { random_element_from } from './util';
+
 const b_exp = 1.414;
 const b_thresh = 0.022;
 const r_scale = 1.14;
@@ -55,4 +57,9 @@ export function hexToSRGB(s: string): [number, number, number] {
 export function srgbToHex([r, g, b]: [number, number, number]): string {
 	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
+
+// TODO maybe move these to a different file
+const twitch_user_colors = ['#ff0000', '#0000ff', '#008000', '#b22222', '#ff7f50', '#9acd32', '#ff4500', '#2e8b57', '#daa520', '#d2691e', '#5f9ea0', '#1e90ff', '#ff69b4', '#8a2be2', '#00ff7f'];
+
+export const random_twitch_user_color: () => string = random_element_from.bind(null, twitch_user_colors);
 
