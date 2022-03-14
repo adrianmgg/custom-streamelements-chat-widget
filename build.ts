@@ -12,6 +12,7 @@ const postcss_import = require('postcss-import');
 type Target = {
 	infile: string;
 	outfile: string;
+	generate_tasks?: (t: Target) => Promise<Target[]>,
 } & {
 	[taskname: string]: ((t: Target) => Promise<unknown>) | string | undefined;
 };
@@ -52,7 +53,38 @@ const build_postcss = async (target: Target) => {
 
 const clean_deletefile = ({outfile}) => fsPromises.unlink(outfile);
 
+const generate_theme_tasks = async (target: Target): Promise<Target[]> => (await Promise.all(
+		await fsPromises.readdir(target.infile)
+			.then(files=>files.flatMap( async(file): Promise<Target[]> => {
+				const fullpath = path.join(target.infile, file);
+				const stat = await fsPromises.stat(fullpath);
+				if(stat.isDirectory) {
+					return [
+						{
+							infile: path.join(fullpath, 'css.css'),
+							outfile: `./build/${file}.css.css`,
+							build: build_postcss,
+							prebuild: standard_prebuild,
+							clean: clean_deletefile,
+						},
+						{
+							infile: path.join(fullpath, 'html.html'),
+							outfile: `./build/${file}.html.html`,
+							build: build_copyfile,
+							prebuild: standard_prebuild,
+							clean: clean_deletefile,
+						},
+					];
+				} else return [];
+			} ))
+	)).flat();
+
 const targets: Target[] = [
+	{
+		infile: './src/themes/',
+		outfile: null,
+		generate_tasks: generate_theme_tasks,
+	},
 	{
 		infile: './src/ts/main.ts',
 		outfile: './build/js.js',
@@ -78,19 +110,12 @@ const targets: Target[] = [
 		clean: clean_deletefile,
 	},
 	{
-		infile: './src/css.css',
-		outfile: './build/css.css',
-		build: build_postcss,
-		prebuild: standard_prebuild,
-		clean: clean_deletefile,
-	},
-	...(['html.html', 'data.json'].map(f=>({
-		infile: `./src/${f}`,
-		outfile: `./build/${f}`,
+		infile: './src/data.json',
+		outfile: './build/data.json',
 		build: build_copyfile,
 		prebuild: standard_prebuild,
 		clean: clean_deletefile,
-	}))),
+	},
 ];
 
 const task_prereqs: Record<string, string[]> = {
@@ -98,9 +123,16 @@ const task_prereqs: Record<string, string[]> = {
 };
 
 
+let generators_ran = false;
 const tasks_ran = [];
 
 const run_task = async (task: string) => {
+	if(!generators_ran) {
+		generators_ran = true;
+		for(const target of targets) {
+			if('generate_tasks' in target) targets.push(...await target.generate_tasks(target));
+		}
+	}
 	for(const prereq of task_prereqs[task] ?? []) {
 		if(!(prereq in tasks_ran)) {
 			await run_task(prereq);
