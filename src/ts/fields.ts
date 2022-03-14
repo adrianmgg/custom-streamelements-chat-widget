@@ -1,4 +1,4 @@
-import { FieldsAll, FieldsCheckbox, FieldsDropdown, FieldsNumber, FieldsColorpicker } from './streamelements';
+import { FieldsAll, FieldsCheckbox, FieldsDropdown, FieldsNumber, FieldsColorpicker, FieldsGooglefont, FieldsText } from './streamelements';
 
 export type MyFields = {
 	history_size: FieldsNumber;
@@ -8,6 +8,9 @@ export type MyFields = {
 	localized_name_mode: FieldsDropdown<'localized_only' | 'unlocalized_only' | 'both'>;
 	remove_emote_gap: FieldsCheckbox;
 	use_twemoji: FieldsCheckbox;
+	font_type: FieldsDropdown<'google_font' | 'other_font'>;
+	font_googlefont: FieldsGooglefont;
+	font_other: FieldsText;
 };
 
 export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
@@ -57,6 +60,23 @@ export const fields: { [K in keyof MyFields]: NonNullable<MyFields[K]> } = {
 		type: 'checkbox',
 		label: 'use twemoji for emojis',
 		value: false,
+	},
+	font_type: {
+		type: 'dropdown',
+		options: {
+			'google_font': 'Google Fonts',
+			'other_font': 'Other',
+		},
+		label: 'Font Type',
+		value: 'google_font',
+	},
+	font_googlefont: {
+		type: 'googleFont',
+		label: 'font (google fonts)',
+	},
+	font_other: {
+		type: 'text',
+		label: 'font (other)',
 	},
 };
 

@@ -95,6 +95,23 @@ export interface SEChatDeleteMessagesEventDetail {
     };
 };
 
+export interface SESubscriberLatestEventDetail {
+    event: {
+        /** username */
+        name: string;
+        /** duration in months */
+        amount: number;
+        /** tier */
+        tier: number;
+        /** message, if any */
+        message: string;
+        /** sender, if gifted */
+        sender: string;
+        /** gifted? */
+        gifted: boolean;
+    };
+};
+
 export type SEEventListenerDetailTypeMap = {
     // "New Follower"
     'follower-latest': {},  // TODO
@@ -575,15 +592,7 @@ export interface FieldsHidden extends FieldsBase {
     value?: string;
 }
 
-export type FieldsAll = FieldsText | FieldsCheckbox | FieldsColorpicker | FieldsNumber | FieldsSlider | FieldsDropdown | FieldsImage | FieldsVideo | FieldsSound | FieldsGooglefont | FieldsButton | FieldsHidden;
-
-// export type FieldData2FieldDataType<F extends FieldsAll> = F['value'];
-
-type Foo = {
-    bar: FieldsCheckbox;
-    baz: FieldsDropdown;
-    qux: FieldsSlider;
-};
+export type FieldsAll = FieldsText | FieldsCheckbox | FieldsColorpicker | FieldsNumber | FieldsSlider | FieldsDropdown<string> | FieldsImage | FieldsVideo | FieldsSound | FieldsGooglefont | FieldsButton | FieldsHidden;
 
 export type Fields2FieldData<Fields extends Record<string, FieldsAll>> = {
     [K in keyof Fields]: Fields[K]['value']

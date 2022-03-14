@@ -12,14 +12,15 @@ type MyFieldData = Fields2FieldData<MyFields>;
 
 let fieldData: MyFieldData;
 
-let chat_root: Element;
+let chat_root: HTMLElement;
 let chat_template: HTMLTemplateElement;
 
 const userId2random_color = {};
 
 function init() {
-    chat_root = document.getElementsByClassName('chat_root')?.[0];
+    chat_root = document.getElementsByClassName('chat_root')?.[0] as HTMLElement;
     chat_template = document.getElementsByClassName('chat_template')?.[0] as HTMLTemplateElement; // FIXME actually check instead of just casting
+    setup_font_stuff();
 }
 
 interface ParsedEmote {
@@ -72,6 +73,31 @@ function* chain_emote_parsers(g: Generator<string | ParsedEmote, void, undefined
 function clear_old_messages() {
     while(chat_root.childNodes.length > fieldData.history_size) {
         chat_root.removeChild(chat_root.childNodes[0]);
+    }
+}
+
+function setup_font_stuff() {
+    let font_family: string;
+    let font_url: string | null = null;
+    switch(fieldData.font_type) {
+        case 'google_font':
+            font_family = fieldData.font_googlefont;
+            font_url = `https://fonts.googleapis.com/css?family=${fieldData.font_googlefont}`;
+            break;
+        case 'other_font':
+            font_family = fieldData.font_other;
+            break;
+    }
+    setAllCSSVars(chat_root, {
+        // just gonna use JSON.stringify since it'll handle quote escaping for me
+        '--chat-font': JSON.stringify(font_family),
+    });
+    if(font_url !== null) {
+        elhelper.create('link', {
+            href: font_url,
+            rel: 'stylesheet',
+            parent: document.head,
+        });
     }
 }
 
