@@ -5,6 +5,9 @@ import { nodeResolve as rollup_noderesolve } from '@rollup/plugin-node-resolve';
 const rollup_commonjs = require('@rollup/plugin-commonjs');
 import * as fsPromises from 'fs/promises';
 import generate_fields from './src/ts/generate_fields';
+// const postcss = require('postcss');
+import postcss from 'postcss';
+const postcss_import = require('postcss-import');
 
 type Target = {
 	infile: string;
@@ -30,6 +33,22 @@ function build_rollup(input_cfg: rollup.RollupOptions, output_cfg: rollup.Output
 		console.log(`${target.infile} -> ${target.outfile}`);
 	};
 }
+
+const build_postcss = async (target: Target) => {
+	const content = await fsPromises.readFile(target.infile);
+	const result = await (
+		postcss()
+			.use(postcss_import())
+			.process(content, {
+				from: target.infile,
+			})
+	);
+	fsPromises.writeFile(target.outfile, result.css);
+	console.log(`${target.infile} -> ${target.outfile}`);
+	for(const warning of result.warnings()) {
+		console.warn(`\tWARNING: ${warning}`);
+	}
+};
 
 const clean_deletefile = ({outfile}) => fsPromises.unlink(outfile);
 
@@ -58,7 +77,14 @@ const targets: Target[] = [
 		prebuild: standard_prebuild,
 		clean: clean_deletefile,
 	},
-	...(['css.css', 'html.html', 'data.json'].map(f=>({
+	{
+		infile: './src/css.css',
+		outfile: './build/css.css',
+		build: build_postcss,
+		prebuild: standard_prebuild,
+		clean: clean_deletefile,
+	},
+	...(['html.html', 'data.json'].map(f=>({
 		infile: `./src/${f}`,
 		outfile: `./build/${f}`,
 		build: build_copyfile,

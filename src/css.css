@@ -1,6 +1,20 @@
+/******************************************************************************/
+/*                                  IMPORTS                                   */
+/******************************************************************************/
+
+@import 'normalize.css';
+
+/******************************************************************************/
+/*                                  MAIN CSS                                  */
+/******************************************************************************/
+
 .username {
   color: var(--user-color);
   text-shadow: -1px -1px 0 var(--user-color-outline), 1px -1px 0 var(--user-color-outline), -1px 1px 0 var(--user-color-outline), 1px 1px 0 var(--user-color-outline);
+}
+
+.username_secondary {
+  color: var(--user-color);
 }
 
 .badges_container .badge {
